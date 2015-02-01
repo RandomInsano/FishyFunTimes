@@ -148,6 +148,8 @@ void rock_state()
       
       // Detect pump failure (hopefully). I figure if the full float
       // isn't changing, we should give up before there are problems.
+      // The underflow of the timer variable doesn't really matter here
+      // if it wasn't full before it shouldn't be full the next time.
       if (!state_timer-- && sump.full) {
         err(ERROR_STATE_TIMEOUT);
       }      
