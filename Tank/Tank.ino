@@ -144,6 +144,12 @@ void rock_state()
         err(ERROR_OVERFLOW);
       }
       
+      // Detect pump failure (hopefully). I figure if the full float
+      // isn't changing, we should give up before there are problems.
+      if (!state_timer-- && sump.full) {
+        err(ERROR_STATE_TIMEOUT);
+      }      
+      
       break;
       
     case FILLING:
@@ -181,6 +187,7 @@ void setup() {
   
   // Might as well start draining
   sump.state = DRAINING;
+  state_timer = MAX_TIME_BEFORE_CHANGE;  
   
   for (char a = 0; a < 10; a++)
     pinMode(a, INPUT_PULLUP);
