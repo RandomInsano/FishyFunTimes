@@ -29,6 +29,9 @@ const char ERROR_UNDERFLOW        = 3;
 const char ERROR_IMPOSSIBLE_STATE = 4;
 const char ERROR_STATE_TIMEOUT    = 5;
 
+// Mnemonic for status when debug printing
+const char* STATE_TEXT = "IEF";
+
 enum action_state {
   FILLING = 2,
   DRAINING = 1,
@@ -88,7 +91,7 @@ void debug_print()
   if (Serial.available()) {
     Serial.write("      S:FLE:FLE\r\n");
     Serial.write("Data: ");
-    Serial.write('0' + sump.state);
+    Serial.write(STATE_TEXT[sump.state]);
     Serial.write(':');      
     Serial.write('0' + sump.full);
     Serial.write('0' + sump.low);
