@@ -86,7 +86,7 @@ void debug_print()
     return;
     
   if (Serial.available()) {
-    Serial.write("      S:FLE:FLE\n");
+    Serial.write("      S:FLE:FLE\r\n");
     Serial.write("Data: ");
     Serial.write('0' + sump.state);
     Serial.write(':');      
@@ -99,7 +99,7 @@ void debug_print()
     Serial.write('0' + barrel.empty);
     Serial.write(':');
     Serial.print(state_timer, HEX);
-    Serial.write("\n");
+    Serial.write("\r\n");
   }  
 }
 
@@ -198,7 +198,7 @@ void setup() {
   pinMode(PIN_MAIN_FILL_PUMP,  OUTPUT);
   pinMode(PIN_ERROR_LIGHT,     OUTPUT);
   
-  Serial.begin(9600);
+  Serial.begin(115200);
 }
 
 void loop() {
