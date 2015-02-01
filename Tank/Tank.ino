@@ -9,7 +9,7 @@ const short MAX_TIME_BEFORE_CHANGE = 20000 / LOOP_PAUSE;
 // =============
 const char PIN_MAIN_DRAIN_PUMP = 10;
 const char PIN_MAIN_FILL_PUMP  = 11;
-const char PIN_DEBUG_LIGHT     = 13;
+const char PIN_ERROR_LIGHT     = 13;
 
 // Sensor inputs
 // =============
@@ -68,14 +68,14 @@ void err(char code) {
   
   while (true) {
     for (char a = 0; a < code; a++) {
-      digitalWrite(PIN_DEBUG_LIGHT, 1);
-      delay(100);
-      digitalWrite(PIN_DEBUG_LIGHT, 0);
+      digitalWrite(PIN_ERROR_LIGHT, 1);
+      delay(200);
+      digitalWrite(PIN_ERROR_LIGHT, 0);
       delay(100);
     }
     
     // Make up the rest of the loop
-    delay(1000 - 200 * code);
+    delay(2000 - 300 * code);
   }
 }
 
@@ -196,6 +196,7 @@ void setup() {
     
   pinMode(PIN_MAIN_DRAIN_PUMP, OUTPUT);
   pinMode(PIN_MAIN_FILL_PUMP,  OUTPUT);
+  pinMode(PIN_ERROR_LIGHT,     OUTPUT);
   
   Serial.begin(9600);
 }
