@@ -50,7 +50,6 @@ struct tank {
   }
 };
   
-SoftwareSerial mySerial(10, 11);
 char cycle_button = 0; // Not used at the moment
 
 struct tank sump;
