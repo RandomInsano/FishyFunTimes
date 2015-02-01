@@ -1,9 +1,9 @@
 #include <avr/sleep.h>
 #include <SoftwareSerial.h>
 
-const bool DEBUG = true;
-const int  LOOP_PAUSE = 500; // milliseconds
-const int  MAX_TIME_BEFORE_CHANGE = 20000 / LOOP_PAUSE;
+const bool  DEBUG = true;
+const short LOOP_PAUSE = 200; // milliseconds
+const short MAX_TIME_BEFORE_CHANGE = 20000 / LOOP_PAUSE;
 
 // Drive outputs
 // =============
@@ -97,6 +97,8 @@ void debug_print()
     Serial.write('0' + barrel.full);
     Serial.write('0' + barrel.low);
     Serial.write('0' + barrel.empty);
+    Serial.write(':');
+    Serial.print(state_timer, HEX);
     Serial.write("\n");
   }  
 }
