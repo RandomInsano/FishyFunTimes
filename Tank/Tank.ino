@@ -31,6 +31,14 @@ const char ERROR_STATE_TIMEOUT    = 5;
 
 // Mnemonic for status when debug printing
 const char* STATE_TEXT = "IEF";
+const char* ERROR_TEXT[] = {
+  "All's well",
+  "Barrel isn't at a safe fill level",
+  "Barrel overflowed while emptying the sump",
+  "Barrel ran out of water for filling the sump",
+  "Floats conflicting. The impossible has happened!",
+  "Floats didn't change fast enough. Water leak? Pump failure?"
+};
 
 enum action_state {
   FILLING = 2,
@@ -69,6 +77,12 @@ void set_pumps(int state) {
 void err(char code) {
   set_pumps(RESTING);
   
+  debug_print();
+  Serial.println();
+  Serial.write("Error: ");
+  Serial.write(ERROR_TEXT[code]);
+  Serial.println();
+  
   while (true) {
     for (char a = 0; a < code; a++) {
       digitalWrite(PIN_ERROR_LIGHT, 1);
@@ -82,7 +96,7 @@ void err(char code) {
   }
 }
 
-// Prints a table showing the internal state of the system
+// Prints a table showing the internal state of the system.
 void debug_print()
 {
   if (!DEBUG)
@@ -214,6 +228,9 @@ void loop() {
   // Change the sump's state based on outside influence
   rock_state();  
 
+  // Show what's going down (only in debug mode)
+  debug_print();
+
   // Take action on sump's state
   set_pumps(sump.state);      
   
@@ -222,6 +239,5 @@ void loop() {
     go_sleep();
   }
   
-  debug_print();
   delay(LOOP_PAUSE);
 }
