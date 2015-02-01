@@ -102,22 +102,20 @@ void debug_print()
   if (!DEBUG)
     return;
     
-  if (Serial.available()) {
-    Serial.write("      S:FLE:FLE\r\n");
-    Serial.write("Data: ");
-    Serial.write(STATE_TEXT[sump.state]);
-    Serial.write(':');      
-    Serial.write('0' + sump.full);
-    Serial.write('0' + sump.low);
-    Serial.write('0' + sump.empty);
-    Serial.write(':');
-    Serial.write('0' + barrel.full);
-    Serial.write('0' + barrel.low);
-    Serial.write('0' + barrel.empty);
-    Serial.write(':');
-    Serial.print(state_timer, HEX);
-    Serial.write("\r\n");
-  }  
+  Serial.write("      S:FLE:FLE\r\n");
+  Serial.write("Data: ");
+  Serial.write(STATE_TEXT[sump.state]);
+  Serial.write(':');      
+  Serial.write('0' + sump.full);
+  Serial.write('0' + sump.low);
+  Serial.write('0' + sump.empty);
+  Serial.write(':');
+  Serial.write('0' + barrel.full);
+  Serial.write('0' + barrel.low);
+  Serial.write('0' + barrel.empty);
+  Serial.write(':');
+  Serial.print(state_timer, HEX);
+  Serial.write("\r\n"); 
 }
 
 void rock_state()
