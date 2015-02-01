@@ -75,7 +75,7 @@ void err(char code) {
     }
     
     // Make up the rest of the loop
-    delay(1000 - 100 * code);
+    delay(1000 - 200 * code);
   }
 }
 
