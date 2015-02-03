@@ -23,6 +23,7 @@ const char PIN_CYCLE_BUTTON = 8;
 
 
 // Errors
+const char ERROR_NONE             = 0;
 const char ERROR_UNSAFE_LEVEL     = 1;
 const char ERROR_OVERFLOW         = 2;
 const char ERROR_UNDERFLOW        = 3;
@@ -30,7 +31,7 @@ const char ERROR_IMPOSSIBLE_STATE = 4;
 const char ERROR_STATE_TIMEOUT    = 5;
 
 // Mnemonic for status when debug printing
-const char* STATE_TEXT = "IEF";
+const char* STATE_TEXT = "IEF!";
 const char* ERROR_TEXT[] = {
   "All's well",
   "Barrel isn't at a safe fill level",
@@ -43,7 +44,8 @@ const char* ERROR_TEXT[] = {
 enum action_state {
   FILLING = 2,
   DRAINING = 1,
-  RESTING = 0
+  RESTING = 0,
+  ERRORED = 3
 };
 
 struct tank {
@@ -61,7 +63,8 @@ struct tank {
   }
 };
   
-char cycle_button = 0; // Not used at the moment
+bool cycle_button = 0;
+char error;
 
 struct tank sump;
 struct tank barrel;
@@ -77,23 +80,24 @@ void set_pumps(int state) {
 void err(char code) {
   set_pumps(RESTING);
   
+  error = code;
+  sump.state = ERRORED;
+  
   debug_print();
   Serial.println();
   Serial.write("Error: ");
   Serial.write(ERROR_TEXT[code]);
   Serial.println();
   
-  while (true) {
-    for (char a = 0; a < code; a++) {
-      digitalWrite(PIN_ERROR_LIGHT, 1);
-      delay(200);
-      digitalWrite(PIN_ERROR_LIGHT, 0);
-      delay(100);
-    }
-    
-    // Make up the rest of the loop
-    delay(2000 - 300 * code);
+  for (char a = 0; a < code; a++) {
+    digitalWrite(PIN_ERROR_LIGHT, 1);
+    delay(200);
+    digitalWrite(PIN_ERROR_LIGHT, 0);
+    delay(100);
   }
+  
+  // Make up the rest of the loop
+  delay(2000 - 300 * code);
 }
 
 // Prints a table showing the internal state of the system.
@@ -114,12 +118,18 @@ void debug_print()
   Serial.write('0' + barrel.low);
   Serial.write('0' + barrel.empty);
   Serial.write(':');
+  Serial.write('0' + error);
+  Serial.write(':');
   Serial.print(state_timer, HEX);
   Serial.write("\r\n"); 
 }
 
 void rock_state()
 {
+  // Pull the value manually for now.
+  // TODO: Deal with debouncing via interrupt
+  cycle_button = digitalRead(PIN_CYCLE_BUTTON);
+  
   // Emergency shutdown, this is an unsafe state
   if (barrel.empty || sump.empty) {
     err(ERROR_UNSAFE_LEVEL);
@@ -140,8 +150,9 @@ void rock_state()
     
   switch(sump.state) {
     case RESTING:
-      if (cycle_button) {
-       sump.state = DRAINING; 
+      if (!cycle_button) {
+        sump.state = DRAINING;
+        state_timer = MAX_TIME_BEFORE_CHANGE;  
       }
       
       break;
@@ -189,6 +200,17 @@ void rock_state()
       }
       
       break;
+      
+    case ERRORED:
+      if (!cycle_button) {
+        sump.state = RESTING;
+        error      = ERROR_NONE;
+      } else {
+        err(error);
+      }
+      
+      
+      break;
   }
 }
 
@@ -203,10 +225,6 @@ void setup() {
   sump.state     = RESTING;
   sump.offset    = 2; // Start at digital pin 2
   barrel.offset  = 5; // Start at digital pin 5
-  
-  // Might as well start draining
-  sump.state = DRAINING;
-  state_timer = MAX_TIME_BEFORE_CHANGE;  
   
   for (char a = 0; a < 10; a++)
     pinMode(a, INPUT_PULLUP);
@@ -230,12 +248,7 @@ void loop() {
   debug_print();
 
   // Take action on sump's state
-  set_pumps(sump.state);      
-  
-  // Put the microcontroller to rest if it's done
-  if (sump.state == RESTING) {
-    go_sleep();
-  }
+  set_pumps(sump.state);
   
   delay(LOOP_PAUSE);
 }
