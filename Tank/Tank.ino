@@ -63,7 +63,7 @@ struct tank {
   }
 };
   
-bool cycle_button = 0;
+volatile bool cycle_button = 0;
 char error;
 
 struct tank sump;
@@ -74,6 +74,18 @@ void set_pumps(int state) {
   // These are both active low, so invert the logic
   digitalWrite(PIN_MAIN_DRAIN_PUMP, !(state == DRAINING));
   digitalWrite(PIN_MAIN_FILL_PUMP,  !(state == FILLING));
+}
+
+// This is an ISR for button presses
+void set_button() {
+  cycle_button = true;
+}
+
+bool get_button() {
+  bool value = cycle_button;
+  cycle_button = false;
+  
+  return value;
 }
 
 // Show the error on the Arduino's LED
@@ -119,6 +131,7 @@ void debug_print()
   Serial.write('0' + barrel.empty);
   Serial.write(':');
   Serial.write('0' + error);
+  Serial.write('0' + cycle_button);
   Serial.write(':');
   Serial.print(state_timer, HEX);
   Serial.write("\r\n"); 
@@ -126,9 +139,11 @@ void debug_print()
 
 void rock_state()
 {
-  // Pull the value manually for now.
-  // TODO: Deal with debouncing via interrupt
-  cycle_button = digitalRead(PIN_CYCLE_BUTTON);
+  // Read in our button state set by the ISR
+  bool button = get_button();
+  
+  // Show everything's alright
+  digitalWrite(PIN_ERROR_LIGHT, sump.state != ERRORED);
   
   // Emergency shutdown, this is an unsafe state
   if (barrel.empty || sump.empty) {
@@ -150,7 +165,7 @@ void rock_state()
     
   switch(sump.state) {
     case RESTING:
-      if (!cycle_button) {
+      if (button) {
         sump.state = DRAINING;
         state_timer = MAX_TIME_BEFORE_CHANGE;  
       }
@@ -202,7 +217,7 @@ void rock_state()
       break;
       
     case ERRORED:
-      if (!cycle_button) {
+      if (button) {
         sump.state = RESTING;
         error      = ERROR_NONE;
       } else {
@@ -213,6 +228,7 @@ void rock_state()
   }
 }
 
+// TODO: Delete me
 void go_sleep()
 {
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -225,12 +241,16 @@ void setup() {
   sump.offset    = 4; // Start at digital pin 4
   barrel.offset  = 7; // Start at digital pin 7
   
+  cycle_button = false;
+  
   for (char a = 0; a < 10; a++)
     pinMode(a, INPUT_PULLUP);
     
   pinMode(PIN_MAIN_DRAIN_PUMP, OUTPUT);
   pinMode(PIN_MAIN_FILL_PUMP,  OUTPUT);
   pinMode(PIN_ERROR_LIGHT,     OUTPUT);
+  
+  attachInterrupt(0, set_button, LOW);
   
   Serial.begin(115200);
 }
