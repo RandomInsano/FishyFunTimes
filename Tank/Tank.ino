@@ -228,14 +228,6 @@ void rock_state()
   }
 }
 
-// TODO: Delete me
-void go_sleep()
-{
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  sleep_enable();
-  sleep_cpu();
-}
-
 void setup() {
   sump.state     = RESTING;
   sump.offset    = 4; // Start at digital pin 4
