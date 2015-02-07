@@ -193,7 +193,12 @@ void rock_state()
       // if it wasn't full before it shouldn't be full the next time.
       if (!state_timer-- && sump.full) {
         err(ERROR_STATE_TIMEOUT);
-      }      
+      }
+      
+      // Allow manual override
+      if (button) {
+        sump.state = FILLING;
+      }
       
       break;
       
@@ -212,6 +217,11 @@ void rock_state()
       // isn't still low (detects pump or line leaks)
       if (!state_timer-- && sump.low) {
         err(ERROR_STATE_TIMEOUT);
+      }
+      
+      // Allow manual override
+      if (button) {
+        sump.state = RESTING;
       }
       
       break;
