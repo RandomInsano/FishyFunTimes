@@ -242,7 +242,7 @@ void setup() {
   pinMode(PIN_MAIN_FILL_PUMP,  OUTPUT);
   pinMode(PIN_ERROR_LIGHT,     OUTPUT);
   
-  attachInterrupt(0, set_button, LOW);
+  attachInterrupt(0, set_button, FALLING);
   
   Serial.begin(115200);
 }
