@@ -19,7 +19,7 @@ const char PIN_FLOAT_EMPTY  = 2;
 
 // User buttons
 // =============
-const char PIN_CYCLE_BUTTON = 8;
+const char PIN_CYCLE_BUTTON = 2;
 
 
 // Errors
@@ -209,7 +209,6 @@ void rock_state()
         err(error);
       }
       
-      
       break;
   }
 }
@@ -223,8 +222,8 @@ void go_sleep()
 
 void setup() {
   sump.state     = RESTING;
-  sump.offset    = 2; // Start at digital pin 2
-  barrel.offset  = 5; // Start at digital pin 5
+  sump.offset    = 4; // Start at digital pin 4
+  barrel.offset  = 7; // Start at digital pin 7
   
   for (char a = 0; a < 10; a++)
     pinMode(a, INPUT_PULLUP);
