@@ -198,6 +198,7 @@ void rock_state()
       // Allow manual override
       if (button) {
         sump.state = FILLING;
+        state_timer = MAX_TIME_BEFORE_CHANGE;
       }
       
       break;
