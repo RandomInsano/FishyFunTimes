@@ -2,8 +2,9 @@
 #include <SoftwareSerial.h>
 
 const bool  DEBUG = true;
-const short LOOP_PAUSE = 200; // milliseconds
+const short LOOP_PAUSE = 100; // milliseconds
 const short MAX_TIME_BEFORE_CHANGE = 20000 / LOOP_PAUSE;
+const short MAX_BUTTON_TIME = 300 / LOOP_PAUSE;
 
 // Drive outputs
 // =============
@@ -64,6 +65,7 @@ struct tank {
 };
   
 volatile bool cycle_button = 0;
+volatile int  button_timer = 0;
 char error;
 
 struct tank sump;
@@ -78,7 +80,10 @@ void set_pumps(int state) {
 
 // This is an ISR for button presses
 void set_button() {
-  cycle_button = true;
+  if (button_timer <= 0) {
+    cycle_button = true;
+    button_timer = MAX_BUTTON_TIME;
+  }
 }
 
 bool get_button() {
@@ -134,6 +139,8 @@ void debug_print()
   Serial.write('0' + cycle_button);
   Serial.write(':');
   Serial.print(state_timer, HEX);
+  Serial.write(':');
+  Serial.print(button_timer, HEX);  
   Serial.write("\r\n"); 
 }
 
@@ -144,6 +151,11 @@ void rock_state()
   
   // Show everything's alright
   digitalWrite(PIN_ERROR_LIGHT, sump.state != ERRORED);
+  
+  // Count down to next allowed button press
+  if (button_timer > 0) {
+    button_timer--;
+  }
   
   // Emergency shutdown, this is an unsafe state
   if (barrel.empty || sump.empty) {
