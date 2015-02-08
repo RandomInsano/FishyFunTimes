@@ -93,6 +93,11 @@ bool get_button() {
   return value;
 }
 
+void sleep() {
+  sleep_mode();
+  sleep_disable();  
+}
+
 // Show the error on the Arduino's LED
 void err(char code) {
   set_pumps(RESTING);
@@ -177,6 +182,11 @@ void rock_state()
     
   switch(sump.state) {
     case RESTING:
+      // Let the button timer bleed out before allowing sleep
+      if (button_timer <= 0) {
+        sleep();
+      }
+    
       if (button) {
         sump.state = DRAINING;
         state_timer = MAX_TIME_BEFORE_CHANGE;  
@@ -266,6 +276,10 @@ void setup() {
   pinMode(PIN_ERROR_LIGHT,     OUTPUT);
   
   attachInterrupt(0, set_button, FALLING);
+  
+  set_pumps(sump.state);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();  
   
   Serial.begin(115200);
 }
